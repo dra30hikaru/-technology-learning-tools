@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Problem Finder Lab｜技術科 問題発見ツール</title>
+<style>
+:root{--ink:#17212b;--muted:#66727f;--line:#d9e0e6;--bg:#f4f6f8;--card:#fff;--accent:#176b87;--accent2:#e7f3f6;--warn:#8a5a00;--good:#17643b}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Yu Gothic",sans-serif;line-height:1.65}
+header{background:#132b3a;color:#fff;padding:22px 24px} header .wrap{max-width:1100px;margin:auto} h1{margin:0;font-size:clamp(22px,4vw,34px);letter-spacing:.02em}.sub{opacity:.8;margin-top:4px}
+.wrap{max-width:1100px;margin:auto;padding:18px}.progress{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:10px 0 18px}.p{height:7px;background:#dfe5e9;border-radius:8px}.p.on{background:var(--accent)}
+.panel{display:none;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 5px 18px rgba(0,0,0,.04)}.panel.active{display:block}.kicker{font-weight:700;color:var(--accent);font-size:13px}.panel h2{font-size:24px;margin:3px 0 8px}.lead{color:var(--muted);margin:0 0 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.choice{border:1px solid var(--line);background:#fff;border-radius:13px;padding:14px;text-align:left;cursor:pointer;font-size:15px;min-height:68px}.choice:hover,.choice.sel{border-color:var(--accent);background:var(--accent2)}
+label{font-weight:700;display:block;margin:15px 0 6px} input,textarea,select{width:100%;border:1px solid #bfc9d1;border-radius:10px;padding:11px 12px;font:inherit;background:#fff}textarea{min-height:88px;resize:vertical}.hint{font-size:13px;color:var(--muted);margin-top:5px}.callout{background:#f7fafb;border-left:4px solid var(--accent);padding:12px 14px;border-radius:8px;margin:14px 0}.lens{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--line);border-radius:999px;padding:7px 11px;background:#fff;cursor:pointer;font-size:14px}.chip.sel{background:#132b3a;color:#fff;border-color:#132b3a}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px}.btn{border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#e8ecef;color:#23313b}.btn:disabled{opacity:.35;cursor:not-allowed}
+.compare{display:grid;grid-template-columns:1fr 70px 1fr;gap:10px;align-items:stretch}.box{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fafbfc}.arrow{display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--accent)}
+.checks{display:grid;gap:8px}.check{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px}.check input{width:auto;margin-top:6px}.score{font-size:14px;font-weight:700;margin:12px 0}.result{border:2px solid #132b3a;border-radius:16px;padding:18px;background:#fff}.result h3{margin:0 0 12px}.row{padding:9px 0;border-bottom:1px dashed var(--line)}.row:last-child{border:0}.tag{display:inline-block;background:var(--accent2);color:#124f63;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;margin-right:6px}.problem{font-size:20px;font-weight:800;padding:15px;background:#f1f7f9;border-radius:12px;margin:10px 0}.small{font-size:12px;color:var(--muted)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.danger{background:#f1e7e7;color:#6e2626}@media(max-width:700px){.compare{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.progress{grid-template-columns:repeat(6,1fr)}.panel{padding:18px}.wrap{padding:12px}}
+@media print{header,.progress,.nav,.toolbar,.no-print{display:none!important}body{background:#fff}.wrap{padding:0}.panel{display:none!important;border:0;box-shadow:none}.panel.active{display:block!important}.result{border:1px solid #333}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Problem Finder Lab</h1><div class="sub">「何を作る？」の前に、「何が起きている？」を見つける。</div></div></header>
+<main class="wrap">
+<div class="progress" id="progress"></div>
+<section class="panel active" data-step="0"><div class="kicker">STEP 1 / 6　場面を決める</div><h2>まず、生活の「一場面」に近づこう</h2><p class="lead">製品を考えるのはまだ先。誰が、どこで、何をしている場面を見るかを決めます。</p>
+<div class="grid" id="sceneChoices"></div>
+<label>自分で場面を書く</label><input id="scene" placeholder="例：祖父が台所で朝食を準備しているとき">
+<div class="callout"><b>ルール：</b>「収納を作る」「便利な道具がほしい」のように、解決策から書き始めない。</div><div class="nav"><span></span><button class="btn primary" onclick="next()">観察へ →</button></div></section>
+
+<section class="panel" data-step="1"><div class="kicker">STEP 2 / 6　事実を集める</div><h2>評価せずに、見えたことを書く</h2><p class="lead">「大変そう」ではなく、まず行動・回数・時間・姿勢・置かれ方など、観察できる事実へ。</p>
+<label>その人は、何をしていた？</label><textarea id="action" placeholder="例：調味料を取るために、奥のびんを3本いったん外へ出していた"></textarea>
+<label>気になった事実を、もう1つ</label><textarea id="fact2" placeholder="例：使い終わったあと、びんを戻すのに時間がかかっていた"></textarea>
+<label>その事実は、どうやって確かめた？</label><select id="evidence"><option>自分で実際に見た</option><option>写真・動画で見た</option><option>本人に聞いた</option><option>自分が体験した</option><option>まだ予想なので、これから確かめたい</option></select>
+<div class="nav"><button class="btn secondary" onclick="prev()">← 戻る</button><button class="btn primary" onclick="next()">見方を変える →</button></div></section>
+
+<section class="panel" data-step="2"><div class="kicker">STEP 3 / 6　違和感を探す</div><h2>同じ場面を、別の「レンズ」で見る</h2><p class="lead">1つ選ぶ必要はありません。押したレンズを使って、さっきの場面を見直します。</p>
+<div class="lens" id="lenses"></div><div id="lensPrompt" class="callout">レンズを選ぶと、観察の問いが表示されます。</div>
+<label>見直して気付いたこと</label><textarea id="notice" placeholder="例：取り出すたびに別の物を動かす「余分な動作」がある"></textarea>
+<label>このことが特に影響するのは誰？</label><input id="who" placeholder="例：料理をする祖父・家族">
+<div class="nav"><button class="btn secondary" onclick="prev()">← 戻る</button><button class="btn primary" onclick="next()">現状と理想へ →</button></div></section>
+
+<section class="panel" data-step="3"><div class="kicker">STEP 4 / 6　ギャップをつくる</div><h2>「現状」と「理想」を分けて考える</h2><p class="lead">問題は、困りごとの名前ではなく、現状と理想の間にあるギャップです。</p>
+<div class="compare"><div class="box"><b>現状｜今どうなっている？</b><textarea id="current" placeholder="事実をもとに書く"></textarea></div><div class="arrow">→</div><div class="box"><b>理想｜どうなればよい？</b><textarea id="ideal" placeholder="製品名ではなく、生活の状態で書く"></textarea></div></div>
+<label>なぜ、その理想が大切？</label><textarea id="why" placeholder="例：毎日行う作業なので、少しの負担でも積み重なるから"></textarea>
+<div class="nav"><button class="btn secondary" onclick="prev()">← 戻る</button><button class="btn primary" onclick="next()">問題として確かめる →</button></div></section>
+
+<section class="panel" data-step="4"><div class="kicker">STEP 5 / 6　問題を吟味する</div><h2>それは「つくりたい物」ではなく、本当に問題か？</h2><p class="lead">チェックが少なければ失敗ではありません。観察へ戻るためのサインです。</p>
+<div class="checks" id="checks"></div><div class="score" id="score"></div>
+<label>問題のタイプ</label><select id="ptype"><option>原状回復型｜すでに困っている・問題になっている</option><option>理想追求型｜今よりもっとよくしたい・将来の心配を減らしたい</option></select>
+<label>技術で扱えそうだと思う理由</label><textarea id="techReason" placeholder="例：材料の形状や構造を工夫することで、置き方・取り出し方を変えられそうだから"></textarea>
+<div class="callout"><b>まだ「何を作るか」は決めなくてよい。</b> 複数の解決方法を考えられる余白がある問題ほど、設計で思考できます。</div>
+<div class="nav"><button class="btn secondary" onclick="prev()">← 戻る</button><button class="btn primary" onclick="next()">問題発見シートを作る →</button></div></section>
+
+<section class="panel" data-step="5"><div class="kicker">STEP 6 / 6　問題発見シート</div><h2>観察から見つけた問題</h2><div class="result" id="result"></div>
+<label class="no-print">次に調べること・確かめること</label><textarea class="no-print" id="nextResearch" placeholder="例：本人に、どの動作が一番負担か聞く／置ける寸法を測る"></textarea>
+<div class="toolbar no-print"><button class="btn primary" onclick="renderResult();window.print()">印刷・PDF保存</button><button class="btn secondary" onclick="copySummary()">文章をコピー</button><button class="btn secondary" onclick="prev()">← 見直す</button><button class="btn danger" onclick="resetAll()">最初から</button></div></section>
+</main>
+<script>
+let step=0, selectedLenses=[];
+const scenes=['家族が料理・食事をするとき','家族が勉強・仕事をするとき','家族が着替え・身支度をするとき','家族が片付け・掃除をするとき','家族が趣味・遊びをするとき','家族が休む・寝るとき','玄関・廊下・階段を使うとき','物を運ぶ・出し入れするとき'];
+const lensData={
+'手間':['同じ動作を何度もしていない？','目的の前に、別の作業が必要になっていない？'],
+'時間':['待っている時間はない？','もっと短くできそうな動作はない？'],
+'安全':['転ぶ・ぶつかる・落ちる・熱いなどの危険は？','「気を付ける」だけで防いでいない？'],
+'身体':['かがむ・伸ばす・持ち上げる・力を入れる動作は？','年齢や体格が変わると困らない？'],
+'無駄':['使っていない空間・材料・エネルギーは？','余計な移動や動作は？'],
+'迷い':['どこにあるか・どう使うか迷うことは？','間違えやすいところは？'],
+'散らかり':['物が重なる・倒れる・戻しにくい場所は？','一時的に置いて、そのままになる物は？'],
+'届かない':['高い・低い・奥など、取りにくい場所は？','一人では扱いにくい物は？'],
+'変化':['今は大丈夫でも、年齢・季節・人数が変わったら？','使う物が増減したら？'],
+'もっと':['困ってはいないが、もっと楽しく・快適に・使いやすくできない？','今の方法の「当たり前」を変えられない？']};
+const checkItems=['実際の人・場面が見えている','観察した事実や本人の声が根拠になっている','現状と理想の違いを説明できる','「○○を作りたい」だけの文になっていない','特定の人だけでなく、似た場面にも起こりそう','材料・形状・構造・加工などを工夫する余地がありそう','解決方法が最初から1つに決まりきっていない'];
+function init(){document.getElementById('sceneChoices').innerHTML=scenes.map(s=>`<button class="choice" onclick="pickScene(this,'${s}')">${s}</button>`).join('');document.getElementById('lenses').innerHTML=Object.keys(lensData).map(x=>`<button class="chip" onclick="toggleLens(this,'${x}')">${x}</button>`).join('');document.getElementById('checks').innerHTML=checkItems.map((x,i)=>`<label class="check"><input type="checkbox" class="quality" onchange="score()"><span>${x}</span></label>`).join('');document.getElementById('progress').innerHTML=[0,1,2,3,4,5].map(i=>`<div class="p ${i===0?'on':''}"></div>`).join('');score()}
+function pickScene(el,s){document.querySelectorAll('#sceneChoices .choice').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');document.getElementById('scene').value=s}
+function toggleLens(el,x){el.classList.toggle('sel');selectedLenses=Array.from(document.querySelectorAll('#lenses .sel')).map(e=>e.textContent);let qs=selectedLenses.flatMap(k=>lensData[k]);document.getElementById('lensPrompt').innerHTML=qs.length?'<b>こんな見方で、もう一度場面を見よう：</b><br>・'+qs.join('<br>・'):'レンズを選ぶと、観察の問いが表示されます。'}
+function next(){if(step<5){step++;show()}if(step===5)renderResult()}
+function prev(){if(step>0){step--;show()}}
+function show(){document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===step));document.querySelectorAll('.p').forEach((p,i)=>p.classList.toggle('on',i<=step));window.scrollTo({top:0,behavior:'smooth'})}
+function score(){let n=document.querySelectorAll('.quality:checked').length;let msg=n<=2?'まだ観察を深める余地があります。STEP2〜4へ戻ってみよう。':n<=5?'問題の輪郭が見えてきました。根拠とギャップをもう一度確認しよう。':'問題発見としてかなり整理されています。次は調査して確かめよう。';document.getElementById('score').textContent=`問題発見チェック：${n} / ${checkItems.length}　${msg}`}
+const v=id=>(document.getElementById(id)?.value||'').trim()||'（未記入）';
+function renderResult(){let cur=v('current'),ideal=v('ideal'),who=v('who'),notice=v('notice');let problem=`${who}にとって、${cur}ため、${ideal}状態との間にギャップがある。`;document.getElementById('result').innerHTML=`<h3>Problem Discovery Card</h3><div class="row"><span class="tag">場面</span>${v('scene')}</div><div class="row"><span class="tag">観察事実</span>${v('action')}<br>${v('fact2')}<div class="small">根拠：${v('evidence')}</div></div><div class="row"><span class="tag">レンズ</span>${selectedLenses.length?selectedLenses.join(' / '):'（未選択）'}<br>${notice}</div><div class="row"><span class="tag">現状</span>${cur}</div><div class="row"><span class="tag">理想</span>${ideal}</div><div class="problem">問題｜${problem}</div><div class="row"><span class="tag">なぜ重要？</span>${v('why')}</div><div class="row"><span class="tag">タイプ</span>${v('ptype')}</div><div class="row"><span class="tag">技術との接点</span>${v('techReason')}</div><div class="row"><b>次にすること：</b> すぐ設計せず、本人へのインタビュー・寸法測定・写真・回数などで、この問題が本当にあるか確かめる。</div>`}
+function copySummary(){renderResult();let text=`【問題発見】\n場面：${v('scene')}\n観察事実：${v('action')} ${v('fact2')}\n現状：${v('current')}\n理想：${v('ideal')}\n対象：${v('who')}\n理由：${v('why')}\n技術で扱えそうな理由：${v('techReason')}\n次に調べること：${v('nextResearch')}`;navigator.clipboard.writeText(text).then(()=>alert('コピーしました'))}
+function resetAll(){if(!confirm('入力内容を消して最初から始めますか？'))return;document.querySelectorAll('input[type=text],textarea').forEach(x=>x.value='');document.querySelectorAll('input[type=checkbox]').forEach(x=>x.checked=false);document.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));selectedLenses=[];step=0;score();show()}
+init();
+</script>
+</body></html>
